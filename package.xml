@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>dsvo_dso</name>
+  <version>1.0.0</version>
+  <description>
+
+    Direct Scale Optimization for DSO
+
+  </description>
+
+  <author>Jiawei Mo</author>
+  <license>MIT</license>
+  <maintainer email="moxxx066@umn.edu">
+    Jiawei Mo
+  </maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>dso</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>message_filters</depend>
+</package>

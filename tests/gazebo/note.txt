@@ -1,0 +1,2 @@
+rostopic pub cmd_vel geometry_msgs/Twist -- '[0.1,0.0,0.0]' '[0.0, 0.0, 0.1]'
+rosbag record /stereo/left/image_raw_color /stereo/right/image_raw_color /odom

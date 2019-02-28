@@ -1,0 +1,10 @@
+so_ba = load('/home/jiawei/Dropbox/IROS/eval/kitti/ba_time.txt');
+so = load('/home/jiawei/Dropbox/IROS/eval/kitti/scale_time.txt');
+sm_ba = load('/home/jiawei/Dropbox/IROS/eval/kitti_stereo/ba_time.txt');
+sm = load('/home/jiawei/Dropbox/IROS/eval/kitti_stereo/stereo_time.txt');
+fprintf('Stereo Opti. Mean: %.2f ms\n', 1000*mean(so));
+fprintf('Stereo Match Mean: %.2f ms\n', 1000*mean(sm));
+fprintf('Stereo Opti. BA Mean: %.2f ms, with %.2f points\n', 1000*mean(so_ba(:,2)), mean(so_ba(:,1)));
+fprintf('Stereo Match BA Mean: %.2f ms, with %.2f points\n', 1000*mean(sm_ba(:,2)), mean(sm_ba(:,1)));
+fprintf('Stereo Opti. BA Mean per point: %.3f ms\n', 1000*mean(so_ba(:,2)) / mean(so_ba(:,1)));
+fprintf('Stereo Match BA Mean per point: %.3f ms\n', 1000*mean(sm_ba(:,2)) / mean(sm_ba(:,1)));

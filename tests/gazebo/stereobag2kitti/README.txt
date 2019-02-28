@@ -1,0 +1,1 @@
+python stereobag2video.py ~/Workspace/data/bags/gazebo_grass.bag /stereo/left/image_raw_color /stereo/right/image_raw_color /odom ./gazebo
