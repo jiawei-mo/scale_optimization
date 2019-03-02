@@ -1,4 +1,4 @@
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "stdio.h"
 #include "util/globalFuncs.h"
@@ -18,7 +18,7 @@ namespace dso
 {
 
 
-	void DSVOSystem::debugPlotTracking()
+	void SODSOSystem::debugPlotTracking()
 	{
 		if(disableAllDisplay) return;
 		if(!setting_render_plotTrackingFull) return;
@@ -75,7 +75,7 @@ namespace dso
 	}
 
 
-	void DSVOSystem::debugPlot(std::string name)
+	void SODSOSystem::debugPlot(std::string name)
 	{
 		if(disableAllDisplay) return;
 		if(!setting_render_renderWindowFrames) return;

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>dsvo_dso</name>
+  <name>so_dso</name>
   <version>1.0.0</version>
   <description>
 
-    Direct Scale Optimization for DSO
+    Extending DSO to a stereo system using scale optimization.
 
   </description>
 

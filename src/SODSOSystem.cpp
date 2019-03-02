@@ -1,4 +1,4 @@
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "stdio.h"
 #include "util/globalFuncs.h"
@@ -34,7 +34,7 @@ int CalibHessian::instanceCounter=0;
 
 
 
-DSVOSystem::DSVOSystem()
+SODSOSystem::SODSOSystem()
 {
 
 	int retstat =0;
@@ -134,7 +134,7 @@ DSVOSystem::DSVOSystem()
 
 	linearizeOperation=true;
 	runMapping=true;
-	mappingThread = boost::thread(&DSVOSystem::mappingLoop, this);
+	mappingThread = boost::thread(&SODSOSystem::mappingLoop, this);
 	lastRefStopID=0;
 
 
@@ -145,7 +145,7 @@ DSVOSystem::DSVOSystem()
 	maxIdJetVisTracker = -1;
 }
 
-DSVOSystem::DSVOSystem(int w, int h, const Eigen::Matrix3f &K, const SE3& T_stereo, Undistort* undistorter_, float init_scale_, float scale_accept_th) : DSVOSystem()
+SODSOSystem::SODSOSystem(int w, int h, const Eigen::Matrix3f &K, const SE3& T_stereo, Undistort* undistorter_, float init_scale_, float scale_accept_th) : SODSOSystem()
 {
   undistorter = undistorter_;
 	init_scale = init_scale_;
@@ -153,7 +153,7 @@ DSVOSystem::DSVOSystem(int w, int h, const Eigen::Matrix3f &K, const SE3& T_ster
   scaleOptimizer = new dso::ScaleOptimizer(w, h, K, T_stereo, scale_accept_th);
 }
 
-DSVOSystem::~DSVOSystem()
+SODSOSystem::~SODSOSystem()
 {
 	blockUntilMappingIsFinished();
 
@@ -188,12 +188,12 @@ DSVOSystem::~DSVOSystem()
   delete scaleOptimizer;
 }
 
-void DSVOSystem::setOriginalCalib(const VecXf &originalCalib, int originalW, int originalH)
+void SODSOSystem::setOriginalCalib(const VecXf &originalCalib, int originalW, int originalH)
 {
 
 }
 
-void DSVOSystem::setGammaFunction(float* BInv)
+void SODSOSystem::setGammaFunction(float* BInv)
 {
 	if(BInv==0) return;
 
@@ -222,7 +222,7 @@ void DSVOSystem::setGammaFunction(float* BInv)
 
 
 
-void DSVOSystem::printResult(std::string file, std::string ba_time_file, std::string scale_time_file, std::string pfs_time_file)
+void SODSOSystem::printResult(std::string file, std::string ba_time_file, std::string scale_time_file, std::string fps_time_file)
 {
 	boost::unique_lock<boost::mutex> lock(trackMutex);
 	boost::unique_lock<boost::mutex> crlock(shellPoseMutex);
@@ -265,7 +265,7 @@ void DSVOSystem::printResult(std::string file, std::string ba_time_file, std::st
 	scaletimefile.close();
 
 	std::ofstream fpstimefile;
-	fpstimefile.open (pfs_time_file.c_str());
+	fpstimefile.open (fps_time_file.c_str());
 	fpstimefile << std::setprecision(4);
 	for(int i=0; i<fps_time.size(); i++)
 	{
@@ -275,7 +275,7 @@ void DSVOSystem::printResult(std::string file, std::string ba_time_file, std::st
 }
 
 
-Vec4 DSVOSystem::trackNewCoarse(FrameHessian* fh)
+Vec4 SODSOSystem::trackNewCoarse(FrameHessian* fh)
 {
 
 	assert(allFrameHistory.size() > 0);
@@ -467,7 +467,7 @@ Vec4 DSVOSystem::trackNewCoarse(FrameHessian* fh)
 	return Vec4(achievedRes[0], flowVecs[0], flowVecs[1], flowVecs[2]);
 }
 
-void DSVOSystem::traceNewCoarse(FrameHessian* fh)
+void SODSOSystem::traceNewCoarse(FrameHessian* fh)
 {
 	boost::unique_lock<boost::mutex> lock(mapMutex);
 
@@ -514,7 +514,7 @@ void DSVOSystem::traceNewCoarse(FrameHessian* fh)
 
 
 
-void DSVOSystem::activatePointsMT_Reductor(
+void SODSOSystem::activatePointsMT_Reductor(
 		std::vector<PointHessian*>* optimized,
 		std::vector<ImmaturePoint*>* toOptimize,
 		int min, int max, Vec10* stats, int tid)
@@ -529,7 +529,7 @@ void DSVOSystem::activatePointsMT_Reductor(
 
 
 
-void DSVOSystem::activatePointsMT()
+void SODSOSystem::activatePointsMT()
 {
 
 	if(ef->nPoints < setting_desiredPointDensity*0.66)
@@ -650,7 +650,7 @@ void DSVOSystem::activatePointsMT()
 	std::vector<PointHessian*> optimized; optimized.resize(toOptimize.size());
 
 	if(multiThreading)
-		treadReduce.reduce(boost::bind(&DSVOSystem::activatePointsMT_Reductor, this, &optimized, &toOptimize, _1, _2, _3, _4), 0, toOptimize.size(), 50);
+		treadReduce.reduce(boost::bind(&SODSOSystem::activatePointsMT_Reductor, this, &optimized, &toOptimize, _1, _2, _3, _4), 0, toOptimize.size(), 50);
 
 	else
 		activatePointsMT_Reductor(&optimized, &toOptimize, 0, toOptimize.size(), 0, 0);
@@ -704,12 +704,12 @@ void DSVOSystem::activatePointsMT()
 
 
 
-void DSVOSystem::activatePointsOldFirst()
+void SODSOSystem::activatePointsOldFirst()
 {
 	assert(false);
 }
 
-void DSVOSystem::flagPointsForRemoval()
+void SODSOSystem::flagPointsForRemoval()
 {
 	assert(EFIndicesValid);
 
@@ -805,12 +805,12 @@ void DSVOSystem::flagPointsForRemoval()
 
 }
 
-void DSVOSystem::addStereoImg( cv::Mat stereo_img, int stereo_id )
+void SODSOSystem::addStereoImg( cv::Mat stereo_img, int stereo_id )
 {
   stereo_list.push({stereo_id, stereo_img.clone()});
 }
 
-void DSVOSystem::addActiveFrame( ImageAndExposure* image, int id )
+void SODSOSystem::addActiveFrame( ImageAndExposure* image, int id )
 {
 
     if(isLost) return;
@@ -922,7 +922,7 @@ void DSVOSystem::addActiveFrame( ImageAndExposure* image, int id )
 		return;
 	}
 }
-void DSVOSystem::deliverTrackedFrame(FrameHessian* fh, bool needKF)
+void SODSOSystem::deliverTrackedFrame(FrameHessian* fh, bool needKF)
 {
 
 
@@ -963,7 +963,7 @@ void DSVOSystem::deliverTrackedFrame(FrameHessian* fh, bool needKF)
 	}
 }
 
-void DSVOSystem::mappingLoop()
+void SODSOSystem::mappingLoop()
 {
 	boost::unique_lock<boost::mutex> lock(trackMapSyncMutex);
 
@@ -1034,7 +1034,7 @@ void DSVOSystem::mappingLoop()
 	printf("MAPPING FINISHED!\n");
 }
 
-void DSVOSystem::blockUntilMappingIsFinished()
+void SODSOSystem::blockUntilMappingIsFinished()
 {
 	boost::unique_lock<boost::mutex> lock(trackMapSyncMutex);
 	runMapping = false;
@@ -1045,7 +1045,7 @@ void DSVOSystem::blockUntilMappingIsFinished()
 
 }
 
-void DSVOSystem::makeNonKeyFrame( FrameHessian* fh)
+void SODSOSystem::makeNonKeyFrame( FrameHessian* fh)
 {
 	// needs to be set by mapping thread. no lock required since we are in mapping thread.
 	{
@@ -1059,7 +1059,7 @@ void DSVOSystem::makeNonKeyFrame( FrameHessian* fh)
 	delete fh;
 }
 
-void DSVOSystem::makeKeyFrame( FrameHessian* fh)
+void SODSOSystem::makeKeyFrame( FrameHessian* fh)
 {
 	// needs to be set by mapping thread
 	{
@@ -1226,7 +1226,7 @@ void DSVOSystem::makeKeyFrame( FrameHessian* fh)
 }
 
 
-void DSVOSystem::initializeFromInitializer(FrameHessian* newFrame)
+void SODSOSystem::initializeFromInitializer(FrameHessian* newFrame)
 {
 	boost::unique_lock<boost::mutex> lock(mapMutex);
 
@@ -1313,7 +1313,7 @@ void DSVOSystem::initializeFromInitializer(FrameHessian* newFrame)
 	printf("INITIALIZE FROM INITIALIZER (%d pts)!\n", (int)firstFrame->pointHessians.size());
 }
 
-void DSVOSystem::makeNewTraces(FrameHessian* newFrame, float* gtDepth)
+void SODSOSystem::makeNewTraces(FrameHessian* newFrame, float* gtDepth)
 {
 	pixelSelector->allowFast = true;
 	//int numPointsTotal = makePixelStatus(newFrame->dI, selectionMap, wG[0], hG[0], setting_desiredDensity);
@@ -1342,7 +1342,7 @@ void DSVOSystem::makeNewTraces(FrameHessian* newFrame, float* gtDepth)
 
 
 
-void DSVOSystem::setPrecalcValues()
+void SODSOSystem::setPrecalcValues()
 {
 	for(FrameHessian* fh : frameHessians)
 	{
@@ -1355,7 +1355,7 @@ void DSVOSystem::setPrecalcValues()
 }
 
 
-void DSVOSystem::printLogLine()
+void SODSOSystem::printLogLine()
 {
 	if(frameHessians.size()==0) return;
 
@@ -1403,7 +1403,7 @@ void DSVOSystem::printLogLine()
 
 
 
-void DSVOSystem::printEigenValLine()
+void SODSOSystem::printEigenValLine()
 {
 	if(!setting_logStuff) return;
 	if(ef->lastHS.rows() < 12) return;
@@ -1485,7 +1485,7 @@ void DSVOSystem::printEigenValLine()
 
 }
 
-void DSVOSystem::printFrameLifetimes()
+void SODSOSystem::printFrameLifetimes()
 {
 	if(!setting_logStuff) return;
 
@@ -1519,12 +1519,12 @@ void DSVOSystem::printFrameLifetimes()
 }
 
 
-void DSVOSystem::printEvalLine()
+void SODSOSystem::printEvalLine()
 {
 	return;
 }
 
-void DSVOSystem::optimize_scale()
+void SODSOSystem::optimize_scale()
 {
 	// return;
   int stereo_id;

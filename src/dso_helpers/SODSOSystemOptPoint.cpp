@@ -1,4 +1,4 @@
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "stdio.h"
 #include "util/globalFuncs.h"
@@ -17,7 +17,7 @@ namespace dso
 
 
 
-PointHessian* DSVOSystem::optimizeImmaturePoint(
+PointHessian* SODSOSystem::optimizeImmaturePoint(
 		ImmaturePoint* point, int minObs,
 		ImmaturePointTemporaryResidual* residuals)
 {

@@ -19,7 +19,7 @@
 #include "OptimizationBackend/MatrixAccumulators.h"
 #include "FullSystem/PixelSelector2.h"
 
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "IOWrapper/Pangolin/PangolinDSOViewer.h"
 
@@ -39,7 +39,7 @@ using namespace dso;
 
 sig_atomic_t stopFlag = 0; // sigint flag
 
-class DSVONode
+class SODSONode
 {
 private:
   std::string cam0_topic;
@@ -55,7 +55,7 @@ private:
 	float scale_accept_th;
   SE3 T_stereo_;
 
-  DSVOSystem* dsvoSystem;
+  SODSOSystem* so_dso_System;
 	Undistort* undistorter0;
   Undistort* undistorter1;
   int frameID;
@@ -66,13 +66,13 @@ private:
 	void settingsDefault(int preset);
 
 public:
-  DSVONode();
-  ~DSVONode();
+  SODSONode();
+  ~SODSONode();
   void imageMessageCallback(const sensor_msgs::ImageConstPtr& msg0, const sensor_msgs::ImageConstPtr& msg1);
 	void finish();
 };
 
-void DSVONode::settingsDefault(int preset)
+void SODSONode::settingsDefault(int preset)
 {
 	printf("\n=============== PRESET Settings: ===============\n");
 	if(preset == 0 || preset == 1)
@@ -121,7 +121,7 @@ void DSVONode::settingsDefault(int preset)
 	printf("==============================================\n");
 }
 
-DSVONode::DSVONode()
+SODSONode::SODSONode()
 {
   ros::NodeHandle nhPriv("~");
   // stereo camera model
@@ -190,7 +190,7 @@ DSVONode::DSVONode()
           (int)undistorter0->getSize()[1],
           undistorter0->getK().cast<float>());
 
-  dsvoSystem = new DSVOSystem(
+  so_dso_System = new SODSOSystem(
           (int)undistorter1->getSize()[0],
           (int)undistorter1->getSize()[1],
           undistorter1->getK().cast<float>(),
@@ -198,10 +198,10 @@ DSVONode::DSVONode()
 				  undistorter1,
           init_scale,
 					scale_accept_th);
-  dsvoSystem->linearizeOperation=(playbackSpeed==0);
+  so_dso_System->linearizeOperation=(playbackSpeed==0);
 
   if(!disableAllDisplay)
-    dsvoSystem->outputWrapper.push_back(new IOWrap::PangolinDSOViewer(
+    so_dso_System->outputWrapper.push_back(new IOWrap::PangolinDSOViewer(
     		 (int)undistorter0->getSize()[0],
     		 (int)undistorter0->getSize()[1]));
 
@@ -213,26 +213,26 @@ DSVONode::DSVONode()
   cam0_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, cam0_topic, 10000);
   cam1_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, cam1_topic, 10000);
   sync = new message_filters::Synchronizer<StereoSyncPolicy>(StereoSyncPolicy(10), *cam0_sub, *cam1_sub);
-  sync->registerCallback(boost::bind(&DSVONode::imageMessageCallback, this, _1, _2));
+  sync->registerCallback(boost::bind(&SODSONode::imageMessageCallback, this, _1, _2));
 
   frameID=0;
 }
 
-DSVONode::~DSVONode()
+SODSONode::~SODSONode()
 {
-  delete dsvoSystem;
+  delete so_dso_System;
 	delete undistorter0;
   delete undistorter1;
 }
 
-void DSVONode::finish()
+void SODSONode::finish()
 {
-	dsvoSystem->blockUntilMappingIsFinished();
+	so_dso_System->blockUntilMappingIsFinished();
 	clock_t ended = clock();
 	struct timeval tv_end;
 	gettimeofday(&tv_end, NULL);
 
-	dsvoSystem->printResult("result.txt", "ba_time.txt", "scale_time.txt", "pfs_time.txt");
+	so_dso_System->printResult("poses.txt", "ba_time.txt", "scale_time.txt", "fps_time.txt");
 
 	// int numFramesProcessed = abs(idsToPlay[0]-idsToPlay.back());
 	// double numSecondsProcessed = fabs(reader->getTimestamp(idsToPlay[0])-reader->getTimestamp(idsToPlay.back()));
@@ -250,7 +250,7 @@ void DSVONode::finish()
 	// 				MilliSecondsTakenMT / (float)numFramesProcessed,
 	// 				1000 / (MilliSecondsTakenSingle/numSecondsProcessed),
 	// 				1000 / (MilliSecondsTakenMT / numSecondsProcessed));
-	// //dsvoSystem->printFrameLifetimes();
+	// //so_dso_System->printFrameLifetimes();
 	// if(setting_logStuff)
 	// {
 	// 		std::ofstream tmlog;
@@ -262,7 +262,7 @@ void DSVONode::finish()
 	// }
 }
 
-void DSVONode::imageMessageCallback(const sensor_msgs::ImageConstPtr& msg0, const sensor_msgs::ImageConstPtr& msg1)
+void SODSONode::imageMessageCallback(const sensor_msgs::ImageConstPtr& msg0, const sensor_msgs::ImageConstPtr& msg1)
 {
   cv::Mat img, stereo_img, conc;
   try {
@@ -274,10 +274,10 @@ void DSVONode::imageMessageCallback(const sensor_msgs::ImageConstPtr& msg0, cons
 
   if(setting_fullResetRequested)
   {
-    std::vector<IOWrap::Output3DWrapper*> wraps = dsvoSystem->outputWrapper;
-    delete dsvoSystem;
+    std::vector<IOWrap::Output3DWrapper*> wraps = so_dso_System->outputWrapper;
+    delete so_dso_System;
     for(IOWrap::Output3DWrapper* ow : wraps) ow->reset();
-		dsvoSystem = new DSVOSystem(
+		so_dso_System = new SODSOSystem(
 	          (int)undistorter1->getSize()[0],
 	          (int)undistorter1->getSize()[1],
 	          undistorter1->getK().cast<float>(),
@@ -285,21 +285,21 @@ void DSVONode::imageMessageCallback(const sensor_msgs::ImageConstPtr& msg0, cons
 					  undistorter1,
             init_scale,
 						scale_accept_th);
-    dsvoSystem->linearizeOperation=(playbackSpeed==0);
-    dsvoSystem->outputWrapper = wraps;
+    so_dso_System->linearizeOperation=(playbackSpeed==0);
+    so_dso_System->outputWrapper = wraps;
     if(undistorter0->photometricUndist != 0)
-      dsvoSystem->setGammaFunction(undistorter0->photometricUndist->getG());
+      so_dso_System->setGammaFunction(undistorter0->photometricUndist->getG());
     setting_fullResetRequested=false;
   }
 
   if(undistorter0->photometricUndist != 0)
-  	dsvoSystem->setGammaFunction(undistorter0->photometricUndist->getG());
+  	so_dso_System->setGammaFunction(undistorter0->photometricUndist->getG());
 
   MinimalImageB minImg((int)img.cols, (int)img.rows,(unsigned char*)img.data);
 	ImageAndExposure* undistImg = undistorter0->undistort<unsigned char>(&minImg, 1,0, 1.0f);
 	undistImg->timestamp = msg0->header.stamp.toSec();
-	dsvoSystem->addStereoImg(stereo_img, frameID);
-	dsvoSystem->addActiveFrame(undistImg, frameID);
+	so_dso_System->addStereoImg(stereo_img, frameID);
+	so_dso_System->addActiveFrame(undistImg, frameID);
 	frameID++;
 	delete undistImg;
 }
@@ -311,8 +311,8 @@ void finishHandler(int sig)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "dsvo");
-  DSVONode vo_node;
+  ros::init(argc, argv, "so_dso_");
+  SODSONode vo_node;
 
 	signal(SIGINT, finishHandler);
 

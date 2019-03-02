@@ -1,4 +1,4 @@
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "stdio.h"
 #include "util/globalFuncs.h"
@@ -24,7 +24,7 @@ namespace dso
 
 
 
-void DSVOSystem::linearizeAll_Reductor(bool fixLinearization, std::vector<PointFrameResidual*>* toRemove, int min, int max, Vec10* stats, int tid)
+void SODSOSystem::linearizeAll_Reductor(bool fixLinearization, std::vector<PointFrameResidual*>* toRemove, int min, int max, Vec10* stats, int tid)
 {
 	for(int k=min;k<max;k++)
 	{
@@ -60,12 +60,12 @@ void DSVOSystem::linearizeAll_Reductor(bool fixLinearization, std::vector<PointF
 }
 
 
-void DSVOSystem::applyRes_Reductor(bool copyJacobians, int min, int max, Vec10* stats, int tid)
+void SODSOSystem::applyRes_Reductor(bool copyJacobians, int min, int max, Vec10* stats, int tid)
 {
 	for(int k=min;k<max;k++)
 		activeResiduals[k]->applyRes(true);
 }
-void DSVOSystem::setNewFrameEnergyTH()
+void SODSOSystem::setNewFrameEnergyTH()
 {
 
 	// collect all residuals and make decision on TH.
@@ -114,7 +114,7 @@ void DSVOSystem::setNewFrameEnergyTH()
 //			meanElement, nthElement, sqrtf(newFrame->frameEnergyTH),
 //			good, bad);
 }
-Vec3 DSVOSystem::linearizeAll(bool fixLinearization)
+Vec3 SODSOSystem::linearizeAll(bool fixLinearization)
 {
 	double lastEnergyP = 0;
 	double lastEnergyR = 0;
@@ -126,7 +126,7 @@ Vec3 DSVOSystem::linearizeAll(bool fixLinearization)
 
 	if(multiThreading)
 	{
-		treadReduce.reduce(boost::bind(&DSVOSystem::linearizeAll_Reductor, this, fixLinearization, toRemove, _1, _2, _3, _4), 0, activeResiduals.size(), 0);
+		treadReduce.reduce(boost::bind(&SODSOSystem::linearizeAll_Reductor, this, fixLinearization, toRemove, _1, _2, _3, _4), 0, activeResiduals.size(), 0);
 		lastEnergyP = treadReduce.stats[0];
 	}
 	else
@@ -188,7 +188,7 @@ Vec3 DSVOSystem::linearizeAll(bool fixLinearization)
 
 
 // applies step to linearization point.
-bool DSVOSystem::doStepFromBackup(float stepfacC,float stepfacT,float stepfacR,float stepfacA,float stepfacD)
+bool SODSOSystem::doStepFromBackup(float stepfacC,float stepfacT,float stepfacR,float stepfacA,float stepfacD)
 {
 //	float meanStepC=0,meanStepP=0,meanStepD=0;
 //	meanStepC += Hcalib.step.norm();
@@ -286,7 +286,7 @@ bool DSVOSystem::doStepFromBackup(float stepfacC,float stepfacT,float stepfacR,f
 
 
 // sets linearization point.
-void DSVOSystem::backupState(bool backupLastStep)
+void SODSOSystem::backupState(bool backupLastStep)
 {
 	if(setting_solverMode & SOLVER_MOMENTUM)
 	{
@@ -334,7 +334,7 @@ void DSVOSystem::backupState(bool backupLastStep)
 }
 
 // sets linearization point.
-void DSVOSystem::loadSateBackup()
+void SODSOSystem::loadSateBackup()
 {
 	Hcalib.setValue(Hcalib.value_backup);
 	for(FrameHessian* fh : frameHessians)
@@ -355,7 +355,7 @@ void DSVOSystem::loadSateBackup()
 }
 
 
-double DSVOSystem::calcMEnergy()
+double SODSOSystem::calcMEnergy()
 {
 	if(setting_forceAceptStep) return 0;
 	// calculate (x-x0)^T * [2b + H * (x-x0)] for everything saved in L.
@@ -366,7 +366,7 @@ double DSVOSystem::calcMEnergy()
 }
 
 
-void DSVOSystem::printOptRes(const Vec3 &res, double resL, double resM, double resPrior, double LExact, float a, float b)
+void SODSOSystem::printOptRes(const Vec3 &res, double resL, double resM, double resPrior, double LExact, float a, float b)
 {
 	printf("A(%f)=(AV %.3f). Num: A(%'d) + M(%'d); ab %f %f!\n",
 			res[0],
@@ -380,7 +380,7 @@ void DSVOSystem::printOptRes(const Vec3 &res, double resL, double resM, double r
 }
 
 
-float DSVOSystem::optimize(int mnumOptIts)
+float SODSOSystem::optimize(int mnumOptIts)
 {
 
 	if(frameHessians.size() < 2) return 0;
@@ -426,7 +426,7 @@ float DSVOSystem::optimize(int mnumOptIts)
 
 
 	if(multiThreading)
-		treadReduce.reduce(boost::bind(&DSVOSystem::applyRes_Reductor, this, true, _1, _2, _3, _4), 0, activeResiduals.size(), 50);
+		treadReduce.reduce(boost::bind(&SODSOSystem::applyRes_Reductor, this, true, _1, _2, _3, _4), 0, activeResiduals.size(), 50);
 	else
 		applyRes_Reductor(true,0,activeResiduals.size(),0,0);
 
@@ -497,7 +497,7 @@ float DSVOSystem::optimize(int mnumOptIts)
 		{
 
 			if(multiThreading)
-				treadReduce.reduce(boost::bind(&DSVOSystem::applyRes_Reductor, this, true, _1, _2, _3, _4), 0, activeResiduals.size(), 50);
+				treadReduce.reduce(boost::bind(&SODSOSystem::applyRes_Reductor, this, true, _1, _2, _3, _4), 0, activeResiduals.size(), 50);
 			else
 				applyRes_Reductor(true,0,activeResiduals.size(),0,0);
 
@@ -580,7 +580,7 @@ float DSVOSystem::optimize(int mnumOptIts)
 
 
 
-void DSVOSystem::solveSystem(int iteration, double lambda)
+void SODSOSystem::solveSystem(int iteration, double lambda)
 {
 	ef->lastNullspaces_forLogging = getNullspaces(
 			ef->lastNullspaces_pose,
@@ -593,7 +593,7 @@ void DSVOSystem::solveSystem(int iteration, double lambda)
 
 
 
-double DSVOSystem::calcLEnergy()
+double SODSOSystem::calcLEnergy()
 {
 	if(setting_forceAceptStep) return 0;
 
@@ -603,7 +603,7 @@ double DSVOSystem::calcLEnergy()
 }
 
 
-void DSVOSystem::removeOutliers()
+void SODSOSystem::removeOutliers()
 {
 	int numPointsDropped=0;
 	for(FrameHessian* fh : frameHessians)
@@ -630,7 +630,7 @@ void DSVOSystem::removeOutliers()
 
 
 
-std::vector<VecX> DSVOSystem::getNullspaces(
+std::vector<VecX> SODSOSystem::getNullspaces(
 		std::vector<VecX> &nullspaces_pose,
 		std::vector<VecX> &nullspaces_scale,
 		std::vector<VecX> &nullspaces_affA,

@@ -1,4 +1,4 @@
-#include "DSVOSystem.h"
+#include "SODSOSystem.h"
 
 #include "stdio.h"
 #include "util/globalFuncs.h"
@@ -24,7 +24,7 @@ namespace dso
 
 
 
-void DSVOSystem::flagFramesForMarginalization(FrameHessian* newFH)
+void SODSOSystem::flagFramesForMarginalization(FrameHessian* newFH)
 {
 	if(setting_minFrameAge > setting_maxFrames)
 	{
@@ -118,7 +118,7 @@ void DSVOSystem::flagFramesForMarginalization(FrameHessian* newFH)
 
 
 
-void DSVOSystem::marginalizeFrame(FrameHessian* frame)
+void SODSOSystem::marginalizeFrame(FrameHessian* frame)
 {
 	// marginalize or remove all this frames points.
 

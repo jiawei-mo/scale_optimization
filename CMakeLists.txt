@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.4.6)
-project(dsvo_dso)
+project(so_dso)
 
 set(BUILD_TYPE Release)
 find_package(catkin REQUIRED COMPONENTS
@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 
-set(DSO_PATH         /home/jiawei/Workspace/dso)
+set(DSO_PATH ~/Workspace/dso)
 
 # set values from environment variables
 if (NOT DSO_PATH)
@@ -92,12 +92,12 @@ if (MSVC)
 endif (MSVC)
 
 # Sources files
-set(DSVOSystem_SOURCE_FILES
-  ${PROJECT_SOURCE_DIR}/src/DSVOSystem.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/DSVOSystemDebugStuff.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/DSVOSystemMarginalize.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/DSVOSystemOptimize.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/DSVOSystemOptPoint.cpp
+set(SODSOSystem_SOURCE_FILES
+  ${PROJECT_SOURCE_DIR}/src/SODSOSystem.cpp
+  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemDebugStuff.cpp
+  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemMarginalize.cpp
+  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemOptimize.cpp
+  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemOptPoint.cpp
 )
 
 include_directories(
@@ -109,9 +109,9 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(dsvo_node src/dsvo_node.cpp ${DSVOSystem_SOURCE_FILES} src/ScaleOptimizer.cpp)
+add_executable(so_dso_node src/so_dso_node.cpp ${SODSOSystem_SOURCE_FILES} src/ScaleOptimizer.cpp)
 
-target_link_libraries(dsvo_node
+target_link_libraries(so_dso_node
     ${DSO_LIBRARY}
     ${Pangolin_LIBRARIES}
     ${OpenCV_LIBS}

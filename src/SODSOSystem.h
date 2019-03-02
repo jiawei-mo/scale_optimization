@@ -67,12 +67,12 @@ class CoarseDistanceMap;
 
 class EnergyFunctional;
 
-class DSVOSystem {
+class SODSOSystem {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	DSVOSystem();
-  DSVOSystem(int w, int h, const Eigen::Matrix3f &K, const SE3& T_stereo, Undistort* undistorter_, float init_scale_, float scale_accept_th);
-	virtual ~DSVOSystem();
+	SODSOSystem();
+  SODSOSystem(int w, int h, const Eigen::Matrix3f &K, const SE3& T_stereo, Undistort* undistorter_, float init_scale_, float scale_accept_th);
+	virtual ~SODSOSystem();
 
   void addStereoImg( cv::Mat stereo_img, int stereo_id );
 
@@ -85,7 +85,7 @@ public:
 
 	float optimize(int mnumOptIts);
 
-	void printResult(std::string file, std::string ba_time_file, std::string scale_time_file, std::string pfs_time_file);
+	void printResult(std::string file, std::string ba_time_file, std::string scale_time_file, std::string fps_time_file);
 
 	void debugPlot(std::string name);
 
