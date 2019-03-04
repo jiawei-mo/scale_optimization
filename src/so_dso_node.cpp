@@ -159,7 +159,7 @@ SODSONode::SODSONode()
   nhPriv.param("quiet", setting_debugout_runquiet, true);
   nhPriv.param("nolog", setting_logStuff, false);
   nhPriv.param("nogui", disableAllDisplay, false);
-  nhPriv.param("nomt", nomt, true);
+  nhPriv.param("nomt", nomt, false);
   multiThreading = !nomt;
   settingsDefault(preset);
   if(mode==0)
