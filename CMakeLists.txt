@@ -1,118 +1,77 @@
-cmake_minimum_required(VERSION 2.4.6)
-project(so_dso)
+SET(PROJECT_NAME so_svo)
+PROJECT(${PROJECT_NAME})
+CMAKE_MINIMUM_REQUIRED (VERSION 2.8.3)
+SET(CMAKE_BUILD_TYPE Release) # Release, RelWithDebInfo
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/")
 
-set(BUILD_TYPE Release)
-find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
+# Set build flags. Set IS_ARM on odroid board as environment variable
+SET(CMAKE_CXX_FLAGS "-Wall -D_LINUX -D_REENTRANT -march=native -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unknown-pragmas")
+IF(DEFINED ENV{ARM_ARCHITECTURE})
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon -march=armv7-a")
+ELSE()
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmmx -msse -msse -msse2 -msse3 -mssse3")
+ENDIF()
+IF(CMAKE_COMPILER_IS_GNUCC)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+ELSE()
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ENDIF()
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -fno-signed-zeros -fno-math-errno -funroll-loops")
+
+# Add catkin and required ROS packages
+FIND_PACKAGE(catkin REQUIRED COMPONENTS
   roscpp
+  cmake_modules
+  nav_msgs
+  std_msgs
+  visualization_msgs
   sensor_msgs
-  cv_bridge
   image_transport
-  message_filters
+  cv_bridge
+  tf
+  svo
+  svo_msgs
+  vikit_common
+  vikit_ros
 )
 
+# Add plain cmake packages
+FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(Eigen REQUIRED)
+FIND_PACKAGE(Sophus REQUIRED)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS thread)
 
-set(DSO_PATH ~/Workspace/dso)
-
-# set values from environment variables
-if (NOT DSO_PATH)
-    set(DSO_PATH $ENV{DSO_PATH})
-endif()
-if (NOT DSO_LIBRARY_PATH)
-    set(DSO_LIBRARY_PATH $ENV{DSO_LIBRARY_PATH})
-    if (NOT DSO_LIBRARY_PATH AND DSO_PATH)
-        set(DSO_LIBRARY_PATH "${DSO_PATH}/build/lib")
-    endif()
-endif()
-
-if (DSO_PATH)
-    # Manually set path to DSO source folder
-    message("DSO_PATH set, trying to find library.")
-    message("---- EXPECTING DSO sources at\n\"${DSO_PATH}\"")
-    set(DSO_INCLUDE_DIRS "${DSO_PATH}/src" "${DSO_PATH}/thirdparty/Sophus")
-    message("---- LOOKING FOR DSO library at\n\"${DSO_LIBRARY_PATH}\"")
-    find_library(DSO_LIBRARY dso ${DSO_LIBRARY_PATH})
-else()
-    # Detect DSO install (also catkin devel folder)
-    message("DSO_PATH not set yet, trying to find installed dso headers and library.")
-    find_path(DSO_INCLUDE_DIRS dso)
-    if (DSO_INCLUDE_DIRS)
-        set(DSO_INCLUDE_DIRS "${DSO_INCLUDE_DIRS}/dso")
-        message("---- FOUND DSO headers at \"${DSO_INCLUDE_DIRS}\"")
-    endif()
-    find_library(DSO_LIBRARY dso)
-endif()
-
-
-if (NOT DSO_INCLUDE_DIRS)
-    message(FATAL_ERROR "DSO headers not found and/or DSO_PATH not set.")
-endif()
-if (NOT DSO_LIBRARY)
-    message(FATAL_ERROR "DSO library not found and/or DSO_LIBRARY_PATH not set.")
-endif()
-
-message("---- Found DSO library at \"${DSO_LIBRARY}\"")
-
-
-
-find_package(Pangolin 0.2 REQUIRED)
-message("\n\n---- FOUND Pangolin Headers at\n\"${Pangolin_INCLUDE_DIRS}\"")
-message("---- FOUND Pangolin Libs at\n\"${Pangolin_LIBRARIES}\"")
-
-find_package(OpenCV REQUIRED)
-message("\n\n---- FOUND OpenCV Headers at\n\"${OpenCV_INCLUDE_DIRS}\"")
-message("---- FOUND OpenCV Libs at\n\"${OpenCV_LIBS}\"")
-
-find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS system thread)
-
+# Describe catkin Project
 catkin_package(
-  CATKIN_DEPENDS
-  geometry_msgs
-  roscpp
-  sensor_msgs
-  cv_bridge
-  image_transport
-  message_filters
+  DEPENDS Eigen OpenCV Sophus Boost
+  CATKIN_DEPENDS roscpp nav_msgs std_msgs visualization_msgs sensor_msgs image_transport cv_bridge tf svo svo_msgs vikit_common vikit_ros
+  INCLUDE_DIRS include
+  LIBRARIES svo_visualizer
 )
 
-###########
-## Build ##
-###########
-
-# flags
-add_definitions("-DENABLE_SSE")
-set(CMAKE_CXX_FLAGS
-   "${SSE_FLAGS} -O3 -g -std=c++0x -march=native"
-#   "${SSE_FLAGS} -O3 -g -std=c++0x -fno-omit-frame-pointer"
-)
-
-if (MSVC)
-     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-endif (MSVC)
-
-# Sources files
-set(SODSOSystem_SOURCE_FILES
-  ${PROJECT_SOURCE_DIR}/src/SODSOSystem.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemDebugStuff.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemMarginalize.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemOptimize.cpp
-  ${PROJECT_SOURCE_DIR}/src/dso_helpers/SODSOSystemOptPoint.cpp
-)
-
-include_directories(
-  ${PROJECT_SOURCE_DIR}/src
-  ${DSO_INCLUDE_DIRS}
-  ${Pangolin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
+# Include dirs
+INCLUDE_DIRECTORIES(
+  include
+  ${Eigen_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${Sophus_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ executable
-add_executable(so_dso_node src/so_dso_node.cpp ${SODSOSystem_SOURCE_FILES} src/ScaleOptimizer.cpp)
+# Set link libraries
+LIST(APPEND LINK_LIBS
+  ${OpenCV_LIBS}
+  ${Sophus_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
-target_link_libraries(so_dso_node
-    ${DSO_LIBRARY}
-    ${Pangolin_LIBRARIES}
-    ${OpenCV_LIBS}
-    ${catkin_LIBRARIES})
+# Create visualizer library
+ADD_LIBRARY(sosvo_visualizer src/visualizer_sosvo.cpp)
+TARGET_LINK_LIBRARIES(sosvo_visualizer ${LINK_LIBS})
+
+# Create Executables
+ADD_EXECUTABLE(so_svo_node src/sosvo_node.cpp src/frame_handler_sosvo.cpp src/initialization_sosvo.cpp src/scale_optimizer.cpp src/nlls_solver_1d.cpp)
+TARGET_LINK_LIBRARIES(so_svo_node sosvo_visualizer)
