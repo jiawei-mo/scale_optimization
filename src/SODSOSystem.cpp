@@ -1161,6 +1161,8 @@ void SODSOSystem::makeKeyFrame( FrameHessian* fh)
   // =========================== REMOVE OUTLIER =========================
   removeOutliers();
 
+
+  // =========================== SCALE OPTIMIZATION =========================
   optimize_scale();
 
 
@@ -1526,7 +1528,6 @@ void SODSOSystem::printEvalLine()
 
 void SODSOSystem::optimize_scale()
 {
-  // return;
   int stereo_id;
   cv::Mat stereo_img;
   while(!stereo_list.empty())
@@ -1564,15 +1565,12 @@ void SODSOSystem::optimize_scale()
   Vec5 achievedRes = Vec5::Constant(NAN);
   scaleOptimizer->makeK(&Hcalib);
   scaleOptimizer->setCoarseTrackingRef(frameHessians);
-  // int scale_lvl = pyrLevelsUsed>2? 2: 1;
   int scale_lvl = pyrLevelsUsed-1;
-  // if(frameHessians.size()<5) scale_lvl=pyrLevelsUsed-1;
 
   std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
   bool scaleOptSucceed = scaleOptimizer->optimize(fh_stereo, scale, scale_lvl, achievedRes);
   std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
   double ttScaleOpt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 -t0).count();
-  // std::cout << " scaleOptimizer time " << ttScaleOpt << std::endl;
   scaleOptTime.push_back(ttScaleOpt);
 
   if(scale_opt_trapped && fabs(scale-1)>0.5)
@@ -1582,9 +1580,6 @@ void SODSOSystem::optimize_scale()
   }
 
   if(scaleOptSucceed)
-  // if(scaleOptimizer->optimize(fh_stereo, scale, scale_lvl, achievedRes) && frameHessians.size() != (setting_maxFrames+1))
-  // scaleOptimizer->optimize(fh_stereo, scale, scale_lvl, achievedRes);
-  // if(false)
   {
   //   std::cout<<"Changing scale"<<std::endl;
     for(FrameHessian* fh : frameHessians)
