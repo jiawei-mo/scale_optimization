@@ -51,3 +51,6 @@ The only extra parameter of this work over [DSO](https://github.com/JakobEngel/d
 - We augmented [FullSystem](https://github.com/JakobEngel/dso/tree/master/src/FullSystem) of DSO to **src/SODSOSystem** with scale optimization. 
 - The files in **src/dso_helpers** are helpers for DSO which are directly copied from DSO. 
 - The main() locates in **src/so_dso_node.cpp**.
+
+# Tests on EuRoC dataset
+In the start of EuRoC dataset,the drone is flying up down and looking at very close objects (e.g. the wood platform). These cases are too challenging for the initialization of scale optimization (i.e. find an initial scale in a brute-force way). The system achieves better performance if the start part is skipped. 
