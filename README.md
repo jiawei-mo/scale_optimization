@@ -10,13 +10,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 # Introduction
 This is the implementation of [Extending Monocular Visual Odometry to Stereo Camera Systems by Scale Optimization](https://arxiv.org/abs/1905.12723). Here, we adapted [DSO](https://github.com/JakobEngel/dso) as our underlying monocular visual odometry.
 
+# VirtualBox Trial
+Here is the [link](https://drive.google.com/file/d/1mmDkwb7FmldyFLzeeZsRPSgBfSqbZ_mD/view?usp=sharing) to a VirtualBox file. Where the project is installed and tested for the readers who would like to try the project without installation.
+
 # Dependencies
 [DSO](https://github.com/JakobEngel/dso)
 
 # Installation
 ```
 install [DSO](https://github.com/JakobEngel/dso)
-export DSO_PATH=[PATH_TO_DSO]/dso
+change DSO_PATH in CMakeLists.txt: set(DSO_PATH PATH_TO_DSO)
 
 cd ~/catkin_ws/src
 git clone https://github.com/jiawei-mo/scale_optimization.git
