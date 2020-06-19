@@ -42,8 +42,6 @@ roslaunch so_dso [YOUR_LAUNCH_FILE]
 
 # Output files
 - **poses.txt**: poses of all frame, using the TUM RGB-D / TUM monoVO format ([timestamp x y z qx qy qz qw] of the cameraToWorld transformation).
-
-Time logs:
 - **fps_time.txt**: runtime of each frame.
 - **scale_time.txt**: runtime of scale optimization.
 - **ba_time.txt**: runtime of bundle adjustment.
