@@ -15,6 +15,7 @@ Here is a [VirtualBox](https://drive.google.com/file/d/1mmDkwb7FmldyFLzeeZsRPSgB
 
 # Dependencies
 [DSO](https://github.com/JakobEngel/dso)
+
 [ROS](https://www.ros.org/)
 
 # Installation
