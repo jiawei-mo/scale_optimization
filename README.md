@@ -11,7 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 This is the implementation of [Extending Monocular Visual Odometry to Stereo Camera Systems by Scale Optimization](https://arxiv.org/abs/1905.12723). Here, we adapted [DSO](https://github.com/JakobEngel/dso) as our underlying monocular visual odometry.
 
 # VirtualBox Trial
-Here is a [VirtualBox](https://drive.google.com/file/d/1mmDkwb7FmldyFLzeeZsRPSgBfSqbZ_mD/view?usp=sharing) with the project installed for the readers who would like to try the project without installation.
+Here is a [VirtualBox](https://drive.google.com/file/d/1mmDkwb7FmldyFLzeeZsRPSgBfSqbZ_mD/view?usp=sharing) with the project installed for the readers who would like to try the project without installation. The password is **123**.
 
 # Dependencies
 [DSO](https://github.com/JakobEngel/dso)
