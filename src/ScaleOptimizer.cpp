@@ -122,6 +122,7 @@ bool ScaleOptimizer::optimize(FrameHessian *newFrameHessian, float &scale,
   float scale_current = scale;
 
   bool haveRepeated = false;
+  bool haveAccepted = false;
 
   for (int lvl = coarsestLvl; lvl >= 0; lvl--) {
     float H;
@@ -185,6 +186,7 @@ bool ScaleOptimizer::optimize(FrameHessian *newFrameHessian, float &scale,
         resOld = resNew;
         scale_current = scale_new;
         lambda *= 0.5;
+        haveAccepted = true;
       } else {
         lambda *= 4;
         if (lambda < lambdaExtrapolationLimit)
@@ -213,7 +215,7 @@ bool ScaleOptimizer::optimize(FrameHessian *newFrameHessian, float &scale,
 
   printf("Final scale: %f Final res: %f\n", scale_current, lastResiduals[0]);
 
-  if (scale_current < 0 || !(lastResiduals[0] < accept_th)) {
+  if (!haveAccepted || scale_current < 0 || !(lastResiduals[0] < accept_th)) {
     printf("Scale opt. rejected: coarsestLvl=%d, scale changed: %f -> %f\n",
            coarsestLvl, scale, scale_current);
     return false;
